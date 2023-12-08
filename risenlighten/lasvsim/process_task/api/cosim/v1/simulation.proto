@@ -1,0 +1,610 @@
+syntax = "proto3";
+
+package risenlighten.lasvsim.process_task.api.cosim.v1;
+option go_package = "github.com/risenlighten-qianxing/process_task/api/cosim/v1;cosimv1";
+
+import "google/api/annotations.proto";
+// the validate rules:
+// https://github.com/envoyproxy/protoc-gen-validate
+import "validate/validate.proto";
+import "google/api/field_behavior.proto";
+import "openapi/v3/annotations.proto";
+import "google/protobuf/empty.proto";
+import "risenlighten/lasvsim/process_task/api/cosim/v1/hdmap.proto";
+
+/*
+  联合仿真服务
+  以下是错误码定义:
+        StartErrorCode    = -100
+        TaskNotExistCode  = -200
+        StopErrorCode     = -300
+        MapErrorCode      = -400
+        NextStepErrorCode = -500
+        VehicleErrorCode  = -600
+        ErrorCode         = -800
+
+        仿真状态码:
+        0    : 待开始
+        1-99 : 运行中
+        100  : 已完成
+        -1   : 运行错误
+        -100 : 任务非正常终止
+*/
+service Cosim {
+  // 开始任务, 任务初始化
+  rpc Start(StartSimulationReq) returns (StartSimulationRes) {
+    option (google.api.http) = {
+      post : "/cosim/start"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "开始仿真"
+    };
+  }
+  // 执行仿真步骤
+  rpc NextStep(NextStepReq) returns (NextStepRes) {
+    option (google.api.http) = {
+      post : "/cosim/nextstep"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "执行仿真步骤"
+    };
+  }
+  // 重置仿真
+  rpc ResetSimulation(ResetSimulationReq) returns (ResetSimulationRes) {
+    option (google.api.http) = {
+      post : "/cosim/reset"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "重置仿真"
+    };
+  }
+  // 强制结束仿真
+  rpc Stop(StopSimulationReq) returns (StopSimulationRes) {
+    option (google.api.http) = {
+      post : "/cosim/stop"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "强制结束仿真"
+    };
+  }
+
+  // 获取全量地图
+  rpc GetMap(GetMapReq) returns (GetMapRes) {
+    option (google.api.http) = {
+      get : "/cosim/allmap"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "获取全量地图"
+    };
+  }
+  // 获取全量交通流信息(车辆)
+  rpc GetAllTrafficPart(GetAllTrafficPartReq) returns (GetAllTrafficPartRes) {
+    option (google.api.http) = {
+      get : "/cosim/allmap"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "获取全量地图"
+    };
+  }
+
+  // 修改车辆状态, lon_acc:纵向加速度, ste_wheel: 方向盘转速
+  rpc SetVehicleControl(SetVehicleControlReq) returns (SetVehicleControlRes) {
+    option (google.api.http) = {
+      post : "/cosim/set_vehicle_control"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "修改车辆状态, lon_acc:纵向加速度, ste_wheel: 方向盘转速"
+    };
+  }
+  // 根据id获取自测车辆信息
+  rpc GetVehicle(GetVehicleReq) returns (GetVehicleRes) {
+    option (google.api.http) = {
+      post : "/cosim/get_vehicle"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "根据id获取自测车辆信息与周车"
+    };
+  }
+
+  // 获取仿真结果数据 map<string, [][]float64> 多层嵌套结构
+  rpc GetResults(GetResultsReq) returns (GetResultsRes) {
+    option (google.api.http) = {
+      get : "/cosim/result"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "获取仿真结果数据 map<string, [][]float64> 多层嵌套结构"
+    };
+  }
+
+  // 根据LinkID获取link信息
+  rpc GetLink(GetLinkReq) returns (GetLinkRes) {
+    option (google.api.http) = {
+      get : "/cosim/link"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "根据LinkID获取link信息"
+    };
+  }
+  // 根据LaneID获取lane信息
+  rpc GetLane(GetLaneReq) returns (GetLaneRes) {
+    option (google.api.http) = {
+      get : "/cosim/lane"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "根据LaneID获取lane信息"
+    };
+  }
+  // 根据junctionID获取junction信息
+  rpc GetJunction(GetJunctionReq) returns (GetJunctionRes) {
+    option (google.api.http) = {
+      get : "/cosim/junction"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "根据junctionID获取junction信息"
+    };
+  }
+  // 根据segmentID获取segment信息
+  rpc GetSegment(GetSegmentReq) returns (GetSegmentRes) {
+    option (google.api.http) = {
+      get : "/cosim/segment"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.0.0"
+      summary : "根据segmentID获取segment信息"
+    };
+  }
+  // 获取车辆Id列表
+  rpc GetVehicleIdList(GetVehicleIdListReq) returns (GetVehicleIdListRes) {
+    option (google.api.http) = {
+      get : "/cosim/get_vehicle_id_list"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.1.0"
+      summary : "获取车辆Id列表"
+    };
+  }
+  // 修改车辆信息
+  rpc UpdateVehicleInfo(UpdateVehicleInfoReq) returns (UpdateVehicleInfoRes) {
+    option (google.api.http) = {
+      put : "/cosim/vehicle"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V1.3.1"
+      summary : "修改车辆信息"
+    };
+  }
+  // 设置测试车辆路径规划
+  rpc SetVehicleTrackPath(SetVehicleTrackPathReq)
+      returns (SetVehicleTrackPathRes) {
+    option (google.api.http) = {
+      post : "/cosim/set_vehicle_track_path"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V2.1.0"
+      summary : "设置车辆的局部路径规划信息"
+    };
+  }
+  // 获取当前时刻的所有车辆信息
+  rpc GetAllVehicles(GetAllVehiclesReq) returns (GetAllVehiclesRes) {
+    option (google.api.http) = {
+      post : "/cosim/vehicles"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V2.1.0"
+      summary : "获取当前时刻的所有车辆信息"
+    };
+  }
+
+  // 释放内存
+  rpc Release(ReleaseReq) returns (google.protobuf.Empty);
+
+  // 获取所有行人对象
+  rpc GetAllPedestrian(GetAllPedestrianReq) returns (GetAllPedestrianRes) {
+    option (google.api.http) = {
+      post : "/cosim/pedestrians"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V2.2.0"
+      summary : "获取当前时刻的所有行人信息"
+    };
+  }
+
+  // 更新当前行人moving信息
+  rpc UpdatePedestrian(UpdatePedestrianReq) returns (UpdatePedestrianRes) {
+    option (google.api.http) = {
+      put : "/cosim/pedestrian"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V2.2.0"
+      summary : "更新行人moving信息"
+    };
+  }
+
+  // 获取车辆ReferenceLines信息
+  rpc GetVehicleReferenceLines(GetVehicleReferenceLinesReq)
+      returns (GetVehicleReferenceLinesRes) {
+    option (google.api.http) = {
+      post : "/cosim/vehicle/referencelines"
+      body : "*"
+    };
+    option (openapi.v3.operation) = {
+      tags : "V2.3.0"
+      summary : "获取车辆ReferenceLines信息"
+    };
+  }
+}
+
+message ErrorMsg {
+  int32 code = 1;
+  string msg = 2;
+}
+
+// 基础信息
+message BaseInfo {
+  // 长度
+  double Length = 1;
+  // 宽度
+  double Width = 2;
+  // 高度
+  double Height = 3;
+  // 重量
+  double Weight = 4;
+  // 最大减速度
+  double max_dec = 5;
+  // 最大加速度
+  double max_acc = 6;
+}
+
+// 物体位置等信息描述
+message Position {
+  // 坐标点
+  Point point = 1;
+  // 物体朝向
+  double phi = 2;
+  // 所处link id
+  string link_id = 3;
+  // 距离link终点的长度
+  double dis_to_link_end = 4;
+  // 所处lane id
+  string lane_id = 5;
+  // 所处segment id
+  string segment_id = 6;
+  // 所处junction id
+  string junction_id = 7;
+}
+
+// 动态信息
+message MovingInfo {
+  // 物体中心所在位置
+  Position position = 1;
+  // 时间戳
+  int64 timestamp = 2;
+  // 纵向速度
+  double u = 3;
+  // 纵向加速度
+  double lon_acc = 4;
+  // 横向速度
+  double v = 5;
+  // 横向加速度
+  double lat_acc = 6;
+  // 角速度
+  double w = 7;
+  // 角加速度
+  double w_acc = 8;
+}
+
+// 静态路径
+message StaticPath { repeated Point point = 1; }
+
+// 动态交通参与对象
+message MovingObj {
+  string id = 1;
+  // 基础信息
+  BaseInfo base_info = 2;
+  // 运动相关信息
+  MovingInfo moving_info = 3;
+  // 运动物体类型，如vehicle, bicycle, pedestrian等
+  string type = 4;
+  // 静态路径
+  repeated StaticPath static_path = 5;
+}
+
+// 自测车辆
+message Vehicle {
+  // 自车信息
+  MovingObj info = 1;
+  // 感知到的周围动态交通参与者信息
+  repeated MovingObj around_moving_objs = 2;
+  // link path
+  repeated string link_path = 3;
+}
+
+message VehicleControl {
+  // 纵向加速度
+  double lon_acc = 1;
+  // 方向盘转角
+  double ste_wheel = 2;
+}
+
+// 全量地图信息
+message Map {
+  // junctionMap
+  map<string, Junction> junction_map = 1;
+  // SegmentMap
+  map<string, Segment> segment_map = 2;
+  // LinkMap
+  map<string, Link> link_map = 3;
+  // LaneMap
+  map<string, Lane> lane_map = 4;
+  // CrosswalkMap
+  map<string, Crosswalk> crosswalk_map = 5;
+  // StopLineMap
+  map<string, Stopline> stop_line_map = 6;
+  // TrafficLight
+  map<string, TrafficLight> traffic_lights = 7;
+  // TrafficSign
+  map<string, TrafficSign> traffic_signs = 8;
+  // Connection
+  map<string, Connections> connection_map = 9;
+  // Movement
+  map<string, Movement> movement_map = 10;
+}
+
+message Connections { map<string, Connection> connections = 1; }
+
+message StartSimulationReq {
+  // 地图ID
+  string map_id = 1;
+  // 起点信息
+  Position origin = 2;
+  // 结束点信息
+  Position destination = 3;
+  // 任务ID
+  uint64 task_id = 4;
+  // 剧本ID
+  uint64 record_id = 5;
+}
+
+message StartSimulationRes {
+  string simulation_id = 1;
+  ErrorMsg error = 2;
+  // 当前服务所在地址。
+  string addr = 3;
+}
+
+message NextStepReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message SimulationState {
+  int32 progress = 1;
+  string msg = 2;
+}
+
+message NextStepRes {
+  SimulationState state = 1;
+  ErrorMsg error = 2;
+}
+
+message ResetSimulationReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message ResetSimulationRes {
+  string simulation_id = 1;
+  ErrorMsg error = 2;
+}
+
+message StopSimulationReq {
+  string simulation_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message StopSimulationRes {
+  SimulationState state = 1;
+  ErrorMsg error = 2;
+}
+
+message GetMapReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message GetMapRes {
+  ErrorMsg error = 1;
+  Map map = 2;
+}
+
+message GetAllTrafficPartReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message GetAllTrafficPartRes {
+  ErrorMsg error = 1;
+  repeated MovingObj list = 2;
+}
+
+message SetVehicleControlReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string vehicle_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+  // 纵向加速度
+  double lon_acc = 3;
+  // 方向盘转角
+  double ste_wheel = 4;
+}
+
+message SetVehicleControlRes {
+  ErrorMsg error = 1;
+  Vehicle vehicle = 2;
+}
+
+message GetVehicleReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string vehicle_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message GetVehicleRes {
+  ErrorMsg error = 1;
+  Vehicle vehicle = 2;
+}
+
+message GetResultsReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message GetResultsRes {
+  ErrorMsg error = 1;
+  map<string, arrays> results = 2;
+
+  message item { repeated double r = 1; }
+
+  message arrays { repeated item arr = 1; }
+}
+
+message GetLinkReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string link_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+message GetLinkRes {
+  ErrorMsg error = 1;
+  Link link = 2;
+}
+
+message GetLaneReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string lane_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+message GetLaneRes {
+  ErrorMsg error = 1;
+  Lane lane = 2;
+}
+
+message GetJunctionReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string junction_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+message GetJunctionRes {
+  ErrorMsg error = 1;
+  Junction junction = 2;
+}
+
+message GetSegmentReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string segment_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+message GetSegmentRes {
+  ErrorMsg error = 1;
+  Segment segment = 2;
+}
+
+message GetVehicleIdListReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message GetVehicleIdListRes {
+  ErrorMsg error = 1;
+  repeated string id_list = 2;
+}
+
+message UpdateVehicleInfoReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string vehicle_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+  // 移动物体类型
+  MovingObj info = 3;
+  // 车辆控制
+  VehicleControl vehicle_control = 4;
+}
+
+message UpdateVehicleInfoRes {
+  ErrorMsg error = 1;
+  Vehicle vehicle = 2;
+}
+
+message SetVehicleTrackPathReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string vehicle_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+  // 跟踪路径, 必填项
+  Line track_path = 3 [ (google.api.field_behavior) = REQUIRED ];
+  // 备选路径, (可多条)非必填
+  repeated Line optional_path = 4;
+}
+
+message SetVehicleTrackPathRes {
+  ErrorMsg error = 1;
+  Vehicle vehicle = 2;
+}
+
+message GetAllVehiclesReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message GetAllVehiclesRes {
+  ErrorMsg error = 1;
+  // 当前时刻所有车辆(包含主车)
+  repeated Vehicle vehicles = 2;
+}
+
+message ReleaseReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message Pedestrian { MovingObj info = 1; }
+
+message GetAllPedestrianReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message GetAllPedestrianRes {
+  ErrorMsg error = 1;
+  // 当前时刻所有行人
+  repeated Pedestrian pedestrians = 2;
+}
+
+message UpdatePedestrianReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string pedestrian_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+  MovingObj info = 3;
+}
+
+message UpdatePedestrianRes { ErrorMsg error = 1; }
+
+message GetVehicleReferenceLinesReq {
+  string simulation_id = 1 [ (google.api.field_behavior) = REQUIRED ];
+  string vehicle_id = 2 [ (google.api.field_behavior) = REQUIRED ];
+}
+
+message ReferenceLine {
+  repeated risenlighten.lasvsim.process_task.api.cosim.v1.Point Points = 1;
+  // 参考线属性（lane/junction）
+  string path_type = 2;
+  // 参考线对应静态路径id（lane/junction）
+  string path_id = 3;
+}
+
+message ReferenceLines { repeated ReferenceLine lines = 1; }
+
+message GetVehicleReferenceLinesRes {
+  ErrorMsg error = 1;
+  repeated ReferenceLines data = 2;
+}

@@ -1,0 +1,256 @@
+syntax = "proto3";
+
+package risenlighten.lasvsim.process_task.api.cosim.v1;
+
+option go_package = "github.com/risenlighten-qianxing/process_task/api/cosim/v1;cosimv1";
+
+message Point {
+  double x = 1;
+  double y = 2;
+}
+
+message Line { repeated Point points = 1; }
+
+// 路口
+message Junction {
+  uint64 map_id = 2;
+  string junction_id = 3;
+  // 路口名称
+  string name = 4;
+  // 路口类型
+  string type = 5;
+  // link id 数组
+  repeated string link_ids = 6;
+  // link 数组
+  repeated Link links = 7;
+  // 路口封闭点位形状
+  repeated Point shape = 8;
+  // 交通灯信号控制组
+  string traffic_light_id = 9;
+}
+
+// 路段
+message Segment {
+  uint64 map_id = 2;
+  string segment_id = 3;
+  // 道路名称
+  string name = 4;
+  // 有序的 link id数组
+  repeated string ordered_link_ids = 5;
+  // 有序 link 数组
+  repeated Link ordered_links = 6;
+  // 起始路口id
+  string start_junction_id = 7;
+  // 结束路口id
+  string end_junction_id = 8;
+  // 长度
+  double length = 9;
+  // 道路方向角度
+  double heading = 10;
+  // 红绿灯 id
+  string traffic_light_pole_id = 11;
+}
+
+// 子路段
+message Link {
+  uint64 map_id = 2;
+  string link_id = 3;
+  // 相对 link
+  string pair_id = 4;
+  // link宽度是否固定，为0时不固定，不为0时固定为该值
+  double width = 5;
+  // 有序的车道引用数组
+  repeated string ordered_lane_ids = 6;
+  // 有序 lane 数组
+  repeated Lane ordered_lanes = 7;
+  // 车道数量
+  int32 lane_num = 8;
+  // 起始位置
+  Point start_point = 9;
+  // 结束位置
+  Point end_point = 10;
+  //  todo 暂时未用
+  double gradient = 11;
+  // 所属 segment
+  string segment_id = 12;
+  // link 长度
+  double length = 13;
+  // link 类型
+  string type = 14;
+  // link 方向角度
+  double heading = 15;
+  // link 顺序
+  int32 link_order = 16;
+  // link 左边界
+  repeated Point left_boundary = 17;
+  // link 右边界
+  repeated Point right_boundary = 18;
+}
+
+// 车道
+message Lane {
+  uint64 map_id = 2;
+  string lane_id = 3;
+  // 车道类型
+  string type = 4;
+  // 车道偏移
+  int32 lane_offset = 5;
+  // 车道所属 link
+  string link_id = 6;
+  // 车道转向标志
+  Turn turn = 7;
+  // 车道中的多段限速属性
+  repeated Speed speeds = 8;
+  // 停车线id
+  string stopline_id = 9;
+
+  // 车道中心线
+  repeated Point center_line = 10;
+  //  // 车道左边界
+  //  repeated Point left_boundary = 1001;
+  //  // 车道右边界
+  //  repeated Point right_boundary = 1002;
+  // 车道关联 link
+  repeated string connect_link_ids = 11;
+
+  // 左车道线
+  LaneMark left_lane_mark = 12;
+  // 右车道线
+  LaneMark right_lane_mark = 13;
+}
+
+message Turn {
+  // 带有3维朝向的点坐标
+  DirectionPoint direction_point = 1;
+  // 掉头、左转、直行和右转(TLSR)的组合(0否|1是)
+  string turn = 2;
+  // 转向与linkId的映射
+  map<string, string> turn_mapping = 3;
+}
+
+message LaneMark {
+  repeated Point shape = 1000;
+  repeated LaneMarkAttribution lane_mark_attrs = 1001;
+}
+
+message LaneMarkAttribution {
+  // 车道线风格长度
+  double length = 1;
+  // 车道距离起始点偏离距离
+  double s = 2;
+  // 车道线右边界点位数组中的起始下标
+  int32 start_index = 3;
+  // 车道线右边界点位数组中的结束下标
+  int32 end_index = 4;
+  // 车道分界线样式
+  string style = 1000;
+  // 车道线颜色
+  string color = 1001;
+  // 车道线宽度
+  double width = 1002;
+}
+message Speed {
+  // 车道距离起始点偏离距离
+  double s = 1;
+  // 限速路段长度
+  double length = 2;
+  // 车道线右边界点位数组中的起始下标
+  //  int32 start_index = 3;
+  //  // 车道线右边界点位数组中的结束下标
+  //  int32 end_index = 4;
+
+  // 速度值 为0时不限速
+  double value = 1000;
+  // 速度单位
+  string uint = 1001;
+  // 限速源
+  string source = 1002;
+}
+
+message Crosswalk {
+  uint64 id = 1;
+  uint64 map_id = 2;
+  string crosswalk_id = 3;
+  // 斑马线方向
+  double heading = 4;
+  // 点位 封闭多点构成
+  repeated Point shape = 1000;
+}
+
+// 停车线
+message Stopline {
+  uint64 map_id = 2;
+  string stopline_id = 3;
+  // 点位 2点连线
+  repeated Point shape = 4;
+}
+
+message TrafficSign {
+  uint64 map_id = 2;
+  string traffic_sign_id = 3;
+  string type = 4;
+  DirectionPoint direction_point = 5;
+}
+
+message DirectionPoint {
+  // double精度点坐标
+  Point point = 1;
+  // 俯仰角
+  double pitching = 2;
+  // 朝向角
+  double heading = 3;
+  // 翻滚角
+  double rolling = 4;
+}
+
+message TrafficLight {
+  uint64 map_id = 2;
+  string traffic_light_id = 3;
+  repeated string Traffic_light_pole_ids = 4;
+}
+
+// 路口内两条车道的连接
+message Connection {
+  uint64 id = 1;
+  uint64 map_id = 2;
+
+  string connection_id = 3;
+  // 所属路口 id
+  string junction_id = 4;
+  // 所属 lane id
+  string movement_id = 5;
+  // 入路口 lane id
+  string upstream_lane_id = 6;
+  // 出路口 lane id
+  string downstream_lane_id = 7;
+  // 车辆行驶路径
+  repeated Point path = 8;
+}
+
+// 流向
+message Movement {
+  uint64 id = 1;
+  uint64 map_id = 2;
+
+  string movement_id = 3;
+  // 入路口link id
+  string upstream_link_id = 4;
+  // 出路口link id
+  string downstream_link_id = 5;
+
+  // junction id
+  string junction_id = 6;
+  // 流向
+  string flow_direction = 7;
+}
+
+message HdTrafficMap {
+  repeated Junction junctions = 1;
+  repeated Segment segments = 2;
+  repeated Link links = 3;
+  repeated Lane lanes = 4;
+  repeated Crosswalk crosswalks = 1000;
+  repeated Stopline stoplines = 1001;
+  repeated TrafficLight traffic_lights = 1002;
+  repeated TrafficSign traffic_signs = 1003;
+}
