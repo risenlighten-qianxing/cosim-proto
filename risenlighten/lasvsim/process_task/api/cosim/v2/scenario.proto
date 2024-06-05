@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package risenlighten.lasvsim.process_task.api.cosim.v2;
+
+option go_package = "git.risenlighten.com/lasvsim/process_task/api/cosim/v2;cosimv2";
+option java_multiple_files = true;
+option java_package = "proto.risenlighten.lasvsim.process_task.api.cosim.v2";
+
+import "google/api/field_behavior.proto";
+import "google/api/annotations.proto";
+import "openapi/v3/annotations.proto";
+import "risenlighten/lasvsim/process_task/api/cosim/v2/external_struct.proto";
+
+service Scenario {
+	rpc GetHdMap(GetHdMapReq) returns (GetHdMapRes) {
+		option (google.api.http) = {
+			post : "/cosim/v2/scenario/map/get"
+			body : "*"
+		};
+		option (openapi.v3.operation) = {
+			tags : "V2.0.0"
+			summary : "根据仿真ID,获取当前仿真剧本高精地图数据HdMap"
+		};
+	};
+}
+
+
+message GetHdMapReq {
+	// 仿真ID
+	string simulation_id = 1[ (google.api.field_behavior) = REQUIRED ];
+}
+
+message GetHdMapRes {
+	// 高精地图结构数据
+	risenlighten.lasvsim.process_task.api.cosim.v2.HdMap hdmap = 1;
+}
